@@ -239,68 +239,59 @@ class FuelPilferageAnalyzer:
             
             progress_bar.empty()
             
-# UNAUTHORIZED VISITS: Stopped vehicles at sites without fuel deliveries
-st.info("Checking for unauthorized visits...")
-
-fuel_delivery_dates = set(
-    (f[f_site], f[f_date].date()) for _, f in fuels.iterrows()
-)
-
-# Sample vehicles for performance
-sample_size = min(800, len(vehicles))
-vehicle_sample = (
-    vehicles.sample(n=sample_size, random_state=42)
-    if len(vehicles) > sample_size
-    else vehicles
-)
-
-# Deduplication tracker
-unauthorized_keys = set()
-
-for _, vehicle in vehicle_sample.iterrows():
-
-    v_date_val = vehicle[v_date]
-    if pd.isna(v_date_val):
-        continue
-
-    v_lat_val = vehicle[v_lat]
-    v_lon_val = vehicle[v_lon]
-    v_id_val = vehicle.get(v_id, 'Unknown')
-
-    # Fail-safe: missing speed column → treat as unauthorized
-    vehicle_speed = vehicle.get(v_speed, None)
-    if vehicle_speed is None or vehicle_speed != 0:
-        continue
-
-    for site_id, (site_lat, site_lon) in site_lookup.items():
-
-        lat_diff = v_lat_val - site_lat
-        lon_diff = v_lon_val - site_lon
-        distance_meters = np.sqrt(
-            lat_diff**2 + (lon_diff * np.cos(np.radians(site_lat)))**2
-        ) * 111000
-
-        if distance_meters <= proximity_radius:
-
-            # Check if fuel delivery exists for same site & date
-            if (site_id, v_date_val.date()) not in fuel_delivery_dates:
-
-                dedup_key = (site_id, v_id_val, v_date_val.date())
-                if dedup_key in unauthorized_keys:
+            # UNAUTHORIZED VISITS: Find vehicles at sites without fuel deliveries
+            st.info("Checking for unauthorized visits...")
+            fuel_delivery_dates = set((f[f_site], f[f_date].date()) for _, f in fuels.iterrows())
+            
+            # Sample vehicles for performance
+            sample_size = min(3000, len(vehicles))
+            vehicle_sample = vehicles.sample(n=sample_size, random_state=42) if len(vehicles) > sample_size else vehicles
+            # Deduplication tracker
+            unauthorized_keys = set()
+            for _, vehicle in vehicle_sample.iterrows():
+                v_date_val = vehicle[v_date]
+                if pd.isna(v_date_val):
+                    continue
+                
+                v_lat_val = vehicle[v_lat]
+                v_lon_val = vehicle[v_lon]
+                v_id_val = vehicle.get(v_id, 'Unknown')
+                
+                    vehicle_speed = vehicle.get(v_speed, None)
+                    if vehicle_speed is None or vehicle_speed != 0:
                     continue
 
-                unauthorized_keys.add(dedup_key)
+                for site_id, (site_lat, site_lon) in site_lookup.items():
+                    lat_diff = v_lat_val - site_lat
+                    lon_diff = v_lon_val - site_lon
+                    distance_meters = np.sqrt(
+                        lat_diff**2 + (lon_diff * np.cos(np.radians(site_lat)))**2) * 111000
+                    if distance_meters <= proximity_radius:
 
-                unauthorized_visits.append({
-                    'site_id': site_id,
-                    'date': v_date_val.strftime('%Y-%m-%d'),
-                    'vehicle_id': v_id_val,
-                    'distance_meters': round(distance_meters, 2),
-                    'reason': 'Stopped vehicle at site without fuel delivery record',
-                    'risk_level': 'Medium'
-                })
 
-            
+                
+                # Check proximity to all sites
+                for site_id, (site_lat, site_lon) in site_lookup.items():
+                    lat_diff = v_lat_val - site_lat
+                    lon_diff = v_lon_val - site_lon
+                    distance_meters = np.sqrt(lat_diff**2 + (lon_diff * np.cos(np.radians(site_lat)))**2) * 111000
+                    
+                    if distance_meters <= proximity_radius
+
+                     if (site_id, v_date_val.date()) not in fuel_delivery_dates:
+                         dedup_key = (site_id, v_id_val, v_date_val.date())
+                         if dedup_key in unauthorized_keys:
+                             continue
+                         unauthorized_keys.add(dedup_key)
+                         unauthorized_visits.append({
+                             'site_id': site_id,
+                             'date': v_date_val.strftime('%Y-%m-%d'),
+                             'vehicle_id': v_id_val,
+                             'distance_meters': round(distance_meters, 2),
+                             'reason': 'Stopped vehicle at site without fuel delivery record',
+                             'risk_level': 'Medium'
+                         })
+                        
             # Compile results
             self.analysis_results = {
                 'genuine_entries': genuine_entries,
