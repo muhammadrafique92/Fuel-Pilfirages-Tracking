@@ -256,9 +256,8 @@ class FuelPilferageAnalyzer:
                 v_lat_val = vehicle[v_lat]
                 v_lon_val = vehicle[v_lon]
                 v_id_val = vehicle.get(v_id, 'Unknown')
-                
-                    vehicle_speed = vehicle.get(v_speed, None)
-                    if vehicle_speed is None or vehicle_speed != 0:
+                vehicle_speed = vehicle.get(v_speed, None)
+                if vehicle_speed is None or vehicle_speed != 0:
                     continue
 
                 for site_id, (site_lat, site_lon) in site_lookup.items():
