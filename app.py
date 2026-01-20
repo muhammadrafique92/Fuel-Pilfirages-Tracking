@@ -1,4 +1,4 @@
-import streamlit as st
+Fimport streamlit as st
 import pandas as pd
 import numpy as np
 import warnings
@@ -432,7 +432,7 @@ class RAGQuerySystem:
             return f"Query processing failed: {str(e)}"
 
 def main():
-    st.markdown('<h1 class="main-header">OpexShield-AI Defence Against Fuel Pilferages</h1>', unsafe_allow_html=True)
+    st.markdown('<h1 class="main-header"> AI based Fuel Pilferage tracker</h1>', unsafe_allow_html=True)
     
     # Initialize session state
     if 'analysis_completed' not in st.session_state:
