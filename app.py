@@ -264,27 +264,16 @@ class FuelPilferageAnalyzer:
                     lat_diff = v_lat_val - site_lat
                     lon_diff = v_lon_val - site_lon
                     distance_meters = np.sqrt(
-                        lat_diff**2 + (lon_diff * np.cos(np.radians(site_lat)))**2) * 111000
-                if distance_meters <= proximity_radius:
-
-
-                
-                # Check proximity to all sites
-                for site_id, (site_lat, site_lon) in site_lookup.items():
-                    lat_diff = v_lat_val - site_lat
-                    lon_diff = v_lon_val - site_lon
-                    distance_meters = np.sqrt(
                         lat_diff**2 + (lon_diff * np.cos(np.radians(site_lat)))**2
                     ) * 111000
-                    
-                    if distance_meters <= proximity_radius
+                    if distance_meters <= proximity_radius:
+                        if (site_id, v_date_val.date()) not in fuel_delivery_dates:
+                            dedup_key = (site_id, v_id_val, v_date_val.date())
+                            if dedup_key in unauthorized_keys:
+                                continue
 
-                     if (site_id, v_date_val.date()) not in fuel_delivery_dates:
-                         dedup_key = (site_id, v_id_val, v_date_val.date())
-                         if dedup_key in unauthorized_keys:
-                             continue
-                         unauthorized_keys.add(dedup_key)
-                         unauthorized_visits.append({
+                            unauthorized_keys.add(dedup_key)
+                            unauthorized_visits.append({
                              'site_id': site_id,
                              'date': v_date_val.strftime('%Y-%m-%d'),
                              'vehicle_id': v_id_val,
