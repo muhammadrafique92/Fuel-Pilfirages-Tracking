@@ -273,7 +273,9 @@ class FuelPilferageAnalyzer:
                 for site_id, (site_lat, site_lon) in site_lookup.items():
                     lat_diff = v_lat_val - site_lat
                     lon_diff = v_lon_val - site_lon
-                    distance_meters = np.sqrt(lat_diff**2 + (lon_diff * np.cos(np.radians(site_lat)))**2) * 111000
+                    distance_meters = np.sqrt(
+                        lat_diff**2 + (lon_diff * np.cos(np.radians(site_lat)))**2
+                    ) * 111000
                     
                     if distance_meters <= proximity_radius
 
