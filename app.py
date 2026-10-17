@@ -135,11 +135,9 @@ class FuelPilferageAnalyzer:
                 (self.vehicle_data[v_lat] != 0)
             ].copy()
             
-            # Performance optimization: sample large datasets
-            max_vehicles = 2000
-            if len(vehicles) > max_vehicles:
-                vehicles = vehicles.sample(n=max_vehicles, random_state=42)
-                st.info(f"Sampled {max_vehicles} vehicles for performance")
+          # Keep all vehicle GPS records
+            vehicles = vehicles.copy()
+            st.info(f"Processing all {len(vehicles):,} vehicle GPS entries")
             
             fuels = self.fuel_records[
                 self.fuel_records[f_date].notna() & 
@@ -148,7 +146,9 @@ class FuelPilferageAnalyzer:
             
             sites = self.site_coordinates[
                 self.site_coordinates[s_lat].notna() & 
-                self.site_coordinates[s_id].notna()
+                self.site_coordinates[s_id].notna() &
+                self.site_coordinates[s_lon].notna()
+            
             ].copy()
             
             # Create site lookup for fast access
